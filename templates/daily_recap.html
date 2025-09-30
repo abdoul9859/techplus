@@ -1,0 +1,369 @@
+{% extends "base.html" %}
+
+{% block title %}Récap Quotidien - GEEK TECHNOLOGIE{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="h3 mb-4">
+            <i class="bi bi-calendar-day me-2"></i>Récap Quotidien
+        </h1>
+    </div>
+</div>
+
+<!-- Sélecteur de date -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <i class="bi bi-calendar3 text-primary fs-2"></i>
+                    </div>
+                    <div class="col">
+                        <label for="recapDate" class="form-label">Date du récap</label>
+                        <input type="date" class="form-control" id="recapDate">
+                    </div>
+                    <div class="col-auto">
+                        <button class="btn btn-primary" onclick="loadDailyRecap()">
+                            <i class="bi bi-search"></i> Charger
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card bg-light">
+            <div class="card-body text-center">
+                <h5 class="card-title" id="currentDate">Chargement...</h5>
+                <p class="text-muted mb-0">Récap pour la journée sélectionnée</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Vue Caisse (Résumé Financier) -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-success">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-cash-coin me-2"></i>Caisse du Jour
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 col-6">
+                        <div class="text-center p-3 border rounded">
+                            <div class="h4 text-success mb-1" id="paymentsReceived">0 F CFA</div>
+                            <small class="text-muted">Paiements Reçus</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="text-center p-3 border rounded">
+                            <div class="h4 text-info mb-1" id="bankEntries">0 F CFA</div>
+                            <small class="text-muted">Entrées Bancaires</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="text-center p-3 border rounded">
+                            <div class="h4 text-danger mb-1" id="bankExits">0 F CFA</div>
+                            <small class="text-muted">Sorties Bancaires</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="text-center p-3 border rounded bg-light">
+                            <div class="h4 mb-1" id="dailyBalance">0 F CFA</div>
+                            <small class="text-muted"><strong>Solde du Jour</strong></small>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-6 col-12 mb-2">
+                        <div class="text-center p-3 border rounded">
+                            <div class="h5 text-danger mb-1" id="dailyPurchasesOut">0 F CFA</div>
+                            <small class="text-muted">Achats quotidiens (déduits)</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-12 mb-2">
+                        <div class="text-center p-3 border rounded">
+                            <div class="h5 mb-1" id="netRevenue">0 F CFA</div>
+                            <small class="text-muted">Chiffre d'affaires net (CA - Achats quotidiens)</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Achats quotidiens -->
+<div class="row mb-4">
+  <div class="col-12">
+    <div class="card border-secondary">
+      <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-basket2 me-2"></i>Achats quotidiens</h5>
+        <div class="fw-bold" id="dailyPurchasesTotal">0 F CFA</div>
+      </div>
+      <div class="card-body">
+        <div class="mb-3">
+          <div class="small text-muted mb-1">Par catégorie</div>
+          <div id="dailyPurchasesByCategory" class="d-flex flex-wrap gap-2">
+            <span class="text-muted">Aucune dépense</span>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th>Heure</th>
+                <th>Catégorie</th>
+                <th>Description</th>
+                <th>Montant</th>
+                <th>Méthode</th>
+                <th>Référence</th>
+              </tr>
+            </thead>
+            <tbody id="dailyPurchasesTable">
+              <tr><td colspan="6" class="text-center text-muted">Aucun achat enregistré pour ce jour</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+</div>
+
+<!-- Statistiques Rapides -->
+<div class="row mb-4">
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Factures Créées</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="invoicesCreated">0</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-receipt fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Devis Créés</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="quotationsCreated">0</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-file-text fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Entrées Stock</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="stockEntries">0</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-box-arrow-in-down fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card border-left-danger shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Sorties Stock</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="stockExits">0</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-box-arrow-up fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Détails par Section -->
+<div class="row">
+    <!-- Factures -->
+    <div class="col-xl-6 col-lg-12 mb-4">
+        <div class="card shadow">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="bi bi-receipt me-2"></i>Factures du Jour
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Heure</th>
+                                <th>N°</th>
+                                <th>Client</th>
+                                <th>Montant</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody id="invoicesTable">
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">Aucune donnée</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Paiements -->
+    <div class="col-xl-6 col-lg-12 mb-4">
+        <div class="card shadow">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-success">
+                    <i class="bi bi-credit-card me-2"></i>Paiements Reçus
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Heure</th>
+                                <th>Facture</th>
+                                <th>Montant</th>
+                                <th>Méthode</th>
+                            </tr>
+                        </thead>
+                        <tbody id="paymentsTable">
+                            <tr>
+                                <td colspan="4" class="text-center text-muted">Aucune donnée</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Devis -->
+    <div class="col-xl-6 col-lg-12 mb-4">
+        <div class="card shadow">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-warning">
+                    <i class="bi bi-file-text me-2"></i>Devis du Jour
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Heure</th>
+                                <th>N°</th>
+                                <th>Client</th>
+                                <th>Montant</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody id="quotationsTable">
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">Aucune donnée</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mouvements de Stock -->
+    <div class="col-xl-6 col-lg-12 mb-4">
+        <div class="card shadow">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-info">
+                    <i class="bi bi-arrow-left-right me-2"></i>Mouvements de Stock
+                </h6>
+            </div>
+            <div class="card-body">
+                <ul class="nav nav-tabs" id="stockTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="entries-tab" data-bs-toggle="tab" data-bs-target="#entries" type="button" role="tab">
+                            <i class="bi bi-box-arrow-in-down text-success"></i> Entrées
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="exits-tab" data-bs-toggle="tab" data-bs-target="#exits" type="button" role="tab">
+                            <i class="bi bi-box-arrow-up text-danger"></i> Sorties
+                        </button>
+                    </li>
+                </ul>
+                <div class="tab-content" id="stockTabContent">
+                    <div class="tab-pane fade show active" id="entries" role="tabpanel">
+                        <div class="table-responsive mt-3">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Heure</th>
+                                        <th>Produit</th>
+                                        <th>Qté</th>
+                                        <th>Référence</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="stockEntriesTable">
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted">Aucune donnée</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="exits" role="tabpanel">
+                        <div class="table-responsive mt-3">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Heure</th>
+                                        <th>Produit</th>
+                                        <th>Qté</th>
+                                        <th>Référence</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="stockExitsTable">
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted">Aucune donnée</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="/static/js/daily_recap.js?v={{ ASSET_VERSION }}"></script>
+{% endblock %}
