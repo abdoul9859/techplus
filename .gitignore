@@ -126,6 +126,13 @@ Thumbs.db
 *.sqlite3
 geektechnologie.db
 
+# Database backups
+*.sql
+*.dump
+*_backup_*.sql
+*_backup_*.dump
+geektechnologie_db_backup_*
+
 # Logs
 logs/
 *.log
