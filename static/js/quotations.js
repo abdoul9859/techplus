@@ -106,38 +106,26 @@ if (typeof window.buildSortHeader !== 'function') {
     };
 }
 
-// Initialisation (cookie-based auth readiness)
+// Initialisation immédiate (sans attente d'authentification)
 document.addEventListener('DOMContentLoaded', function() {
-    const ready = () => {
-        const hasAuthManager = !!window.authManager;
-        const hasUser = !!(hasAuthManager && window.authManager.userData && Object.keys(window.authManager.userData).length);
-        return hasAuthManager && (window.authManager.isAuthenticatedSync() || hasUser);
-    };
-
-    const boot = () => {
-        loadQuotations();
-        setTimeout(() => { try { loadStats(); } catch(e){} }, 200);
-        // Lazy load clients/products on demand only
-        setupEventListeners();
-        setDefaultDates();
-        // Précharger les produits pour que le select fonctionne immédiatement
-        try { loadProducts(); } catch(e) {}
-        
-        // Si on arrive depuis une facture pour voir un devis spécifique
-        try {
-            const openId = sessionStorage.getItem('open_quotation_detail_id');
-            if (openId) {
-                sessionStorage.removeItem('open_quotation_detail_id');
-                // Attendre un court instant que la liste soit affichée puis ouvrir le devis
-                setTimeout(() => {
-                    try { viewQuotation(Number(openId)); } catch(e) {}
-                }, 500);
-            }
-        } catch (e) {}
-    };
-
-    // Lancer immédiatement
-    boot();
+    // Lancement immédiat pour éviter toute latence
+    loadQuotations();
+    setupEventListeners();
+    setDefaultDates();
+    // Précharger les produits pour que le select fonctionne immédiatement
+    try { loadProducts(); } catch(e) {}
+    
+    // Si on arrive depuis une facture pour voir un devis spécifique
+    try {
+        const openId = sessionStorage.getItem('open_quotation_detail_id');
+        if (openId) {
+            sessionStorage.removeItem('open_quotation_detail_id');
+            // Attendre un court instant que la liste soit affichée puis ouvrir le devis
+            setTimeout(() => {
+                try { viewQuotation(Number(openId)); } catch(e) {}
+            }, 500);
+        }
+    } catch (e) {}
 });
 
 function setupEventListeners() {
@@ -276,8 +264,7 @@ function setDefaultDates() {
     if (validUntilInput) validUntilInput.value = validUntil.toISOString().split('T')[0];
 }
 
-// Statistiques: ne pas recalculer côté client pour éviter d'écraser les totaux serveur
-async function loadStats() { /* no-op: cards are updated from server payload */ }
+// Les statistiques sont maintenant calculées côté serveur dans loadQuotations()
 
 function updateStats() {
     try {
@@ -579,7 +566,6 @@ async function toggleQuotationSent(quotationId, isSent) {
     try {
         await axios.put(`/api/quotations/${quotationId}/sent`, { is_sent: !!isSent });
         await loadQuotations();
-        await loadStats();
         showSuccess(isSent ? 'Devis marqué comme envoyé' : 'Devis marqué comme non envoyé');
     } catch (e) {
         showError(e.response?.data?.detail || 'Impossible de changer l\'état envoyé');
@@ -592,7 +578,6 @@ async function changeQuotationStatus(quotationId, newStatus) {
         const statusFr = String(newStatus || '').toLowerCase();
         await axios.put(`/api/quotations/${quotationId}/status`, { status: statusFr });
         await loadQuotations();
-        await loadStats();
         showSuccess('Statut du devis mis à jour');
     } catch (e) {
         showError(e.response?.data?.detail || 'Impossible de mettre à jour le statut');
@@ -614,7 +599,8 @@ function showEmptyState() {
 }
 
 function showLoading() {
-    // Ne pas afficher d'indicateur de chargement pour une expérience instantanée
+    // Aucun indicateur de chargement pour une expérience instantanée
+    // Le tableau reste visible avec les données précédentes pendant le rechargement
 }
 
 // Utilitaires pour les statuts de devis
@@ -1108,7 +1094,6 @@ async function saveQuotation(status) {
 
         // Recharger la liste
         await loadQuotations();
-        await loadStats();
         
         showSuccess(quotationId ? 'Devis enregistré avec succès' : 'Devis enregistré avec succès');
         
@@ -1181,7 +1166,6 @@ async function deleteQuotation(quotationId) {
         await axios.delete(`/api/quotations/${quotationId}`);
 
         await loadQuotations();
-        await loadStats();
         showSuccess('Devis supprimé avec succès');
         
     } catch (error) {

@@ -81,14 +81,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     } catch (e) { /* ignore */ }
-    // Utiliser la nouvelle logique d'authentification basée sur cookies
-    const ready = () => {
-        const hasAuthManager = !!window.authManager;
-        const hasUser = !!(hasAuthManager && window.authManager.userData && Object.keys(window.authManager.userData).length);
-        return hasAuthManager && (window.authManager.isAuthenticatedSync() || hasUser);
-    };
-
-    // Lancer immédiatement
+    // Lancement immédiat sans attente d'authentification
     loadInvoices();
     loadStats();
     setupEventListeners();
