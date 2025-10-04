@@ -1,14 +1,14 @@
-/* Styles personnalisés pour GEEK TECHNOLOGIE */
+/* Styles personnalisés pour TechPlus - Solution simple pour connexions complexes */
 
 :root {
-    --primary-color: #1f2937; /* slate-800 */
-    --secondary-color: #4b5563; /* slate-600 */
+    --primary-color: #045651; /* TechPlus primary */
+    --secondary-color: #045651; /* unified theme */
     --success-color: #16a34a;
     --info-color: #0ea5e9;
     --warning-color: #f59e0b;
     --danger-color: #ef4444;
-    --light-color: #f5f6f8; /* très léger */
-    --dark-color: #111827;
+    --light-color: #eef6f5; /* very light variant */
+    --dark-color: #033f3b; /* darker shade */
 }
 
 body {
@@ -63,7 +63,7 @@ body {
 
 .btn-primary { background: var(--primary-color); border: none; }
 
-.btn-primary:hover { background: #111827; }
+.btn-primary:hover { background: #033f3b; }
 
 /* Formulaires */
 .form-control {
@@ -74,7 +74,7 @@ body {
 
 .form-control:focus {
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    box-shadow: 0 0 0 0.2rem rgba(4, 86, 81, 0.25);
 }
 
 .form-select {
@@ -118,7 +118,7 @@ body {
     transition: none;
 }
 
-.table tbody tr:hover { background-color: rgba(31,41,55,0.06); }
+.table tbody tr:hover { background-color: rgba(4,86,81,0.08); }
 
 /* Badges */
 .badge {
@@ -161,7 +161,7 @@ body {
 }
 
 /* Statistiques du dashboard */
-.stats-card { background:#1f2937; color:#fff; border-radius:15px; padding:1.5rem; margin-bottom:1rem; }
+.stats-card { background: linear-gradient(135deg, #0d9488, #14b8a6); color:#fff; border-radius:15px; padding:1.5rem; margin-bottom:1rem; }
 
 .stats-card .stats-number {
     font-size: 2rem;
@@ -232,7 +232,7 @@ body {
     border-radius: 10px;
 }
 
-::-webkit-scrollbar-thumb { background:#6b7280; border-radius:10px; }
+::-webkit-scrollbar-thumb { background:#045651; border-radius:10px; }
 
 ::-webkit-scrollbar-thumb:hover {
     background: var(--secondary-color);
@@ -261,11 +261,11 @@ body {
 }
 
 /* Pagination */
-.pagination .page-link { border-radius:8px; margin:0 2px; border:1px solid #dee2e6; color:#1f2937; }
+.pagination .page-link { border-radius:8px; margin:0 2px; border:1px solid #dee2e6; color:#045651; }
 
-.pagination .page-item.active .page-link { background-color:#1f2937; border-color:#1f2937; color:#fff; }
+.pagination .page-item.active .page-link { background-color:#045651; border-color:#045651; color:#fff; }
 
-.pagination .page-link:hover { background-color: rgba(31,41,55,0.08); border-color:#1f2937; }
+.pagination .page-link:hover { background-color: rgba(4,86,81,0.08); border-color:#045651; }
 
 /* Search input */
 .search-input {

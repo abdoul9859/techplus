@@ -1,0 +1,91 @@
+/* Couleur personnalisée pour le badge violet (Venant) */
+.bg-purple {
+    background-color: #8e44ad !important;
+    color: white !important;
+}
+
+/* Classe spécifique pour le badge DEVIS avec bon contraste */
+.badge-purple {
+    background-color: #6f42c1 !important;
+    color: white !important;
+}
+
+.badge-purple.bg-opacity-25 {
+    background-color: rgba(111, 66, 193, 0.15) !important;
+    color: #6f42c1 !important;
+    border: 1px solid rgba(111, 66, 193, 0.2) !important;
+}
+
+/* Amélioration du contraste pour les boutons et tuiles */
+.all-categories-tile i,
+.all-categories-tile span,
+.all-zones-tile i,
+.all-zones-tile span,
+.all-types-tile i,
+.all-types-tile span {
+    color: white !important;
+}
+
+.category-tile,
+.zone-tile,
+.type-tile {
+    background-color: #f8f9fa !important;
+}
+
+.category-tile i,
+.category-tile span,
+.zone-tile i,
+.zone-tile span,
+.type-tile i,
+.type-tile span {
+    color: #212529 !important;
+}
+
+/* Styles spécifiques pour chaque type de produit */
+.type-neuf i {
+    color: #28a745 !important;
+}
+
+.type-occasion i {
+    color: #fd7e14 !important;
+}
+
+.type-echange i {
+    color: #0d6efd !important;
+}
+
+.type-venant i {
+    color: #8e44ad !important;
+}
+
+/* Styles pour les tuiles actives */
+.type-tile.active i,
+.type-tile.active span,
+.category-tile.active i,
+.category-tile.active span,
+.zone-tile.active i,
+.zone-tile.active span {
+    color: #212529 !important;
+}
+
+/* Améliorations globales du contraste */
+.bg-white h1, .bg-white h2, .bg-white h3, .bg-white h4, .bg-white h5, .bg-white h6,
+.card-body h1, .card-body h2, .card-body h3, .card-body h4, .card-body h5, .card-body h6,
+.action-card h1, .action-card h2, .action-card h3, .action-card h4, .action-card h5, .action-card h6 {
+    color: #212529 !important;
+}
+
+.btn-outline-secondary {
+    color: #212529 !important;
+    border-color: #6c757d !important;
+}
+
+.btn-outline-secondary:hover {
+    color: #fff !important;
+    background-color: #6c757d !important;
+}
+
+/* Style pour les textes dans les cards et sur fond blanc */
+.card-body p, .card p, .bg-white p {
+    color: #212529 !important;
+} 

@@ -77,7 +77,7 @@
 
         .container-a4 { width: 210mm !important; max-width: 210mm !important; min-height: 297mm !important; margin: 0 !important; padding: 0 !important; background-color: #fff !important; box-shadow: 0 5px 15px rgba(0,0,0,0.08); overflow: visible; display: flex; flex-direction: column; position: relative; }
 
-        .header { background: #fff; padding: 28px 32px 22px; border-bottom: 1px solid #ddd; display: flex; justify-content: space-between; align-items: flex-start; width: 100%; }
+        .header { background: #fff; padding: 35px 32px 22px; border-bottom: 1px solid #ddd; display: flex; justify-content: space-between; align-items: flex-start; width: 100%; }
         .logo-section { display: flex; align-items: center; gap: 16px; }
         .logo { max-width: 150px; max-height: 150px; object-fit: contain; }
         .company-info h1 { font-size: 22px; font-weight: 800; margin: 0; color: #111; }
@@ -304,7 +304,7 @@
                     {% if _logo %}<img src="{{ _logo }}" alt="Logo" class="logo">{% endif %}
                     <div class="company-info">
                         {% set _name = settings.company_name or settings.name %}
-                        <h1>{{ _name or 'Geek Technologie' }}</h1>
+                        <h1>{{ _name or 'TechPlus' }}</h1>
                         <p>{{ settings.address or '' }}{% if settings.city %}, {{ settings.city }}{% endif %}</p>
                     </div>
                 </div>
@@ -452,7 +452,7 @@
                     {% endif %}
                     <div>
                         {% set _name = settings.company_name or settings.name %}
-                        <div class="brand">{{ _name or 'Geek Technologie' }}</div>
+                        <div class="brand">{{ _name or 'TechPlus' }}</div>
                         <div class="address">{{ settings.address or '' }}{% if settings.city %}, {{ settings.city }}{% endif %}</div>
                     </div>
                 </div>
@@ -540,7 +540,7 @@
             <!-- Signature & cachet -->
             <div class="warranty-footer">
                 {% set _name = settings.company_name or settings.name %}
-                <p><strong>{{ _name or 'Geek Technologie' }}</strong></p>
+                <p><strong>{{ _name or 'TechPlus' }}</strong></p>
                 <p>{{ settings.address or '' }}{% if settings.city %}, {{ settings.city }}{% endif %}</p>
                 {% if settings.phone %}<p>Tél: {{ settings.phone }}</p>{% endif %}
                 {% if settings.email %}<p>Email: {{ settings.email }}</p>{% endif %}

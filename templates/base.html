@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}{{ global_settings.name or 'GEEK TECHNOLOGIE' }}{% endblock %}</title>
+    <title>{% block title %}{{ global_settings.name or 'TechPlus' }}{% endblock %}</title>
     {% set _favicon = (global_settings.logo or global_settings.logo_path) if global_settings is defined else None %}
     {% if _favicon %}
     <link rel="icon" href="{{ _favicon }}">
@@ -69,9 +69,9 @@
                 {% if _logo_global %}
                     <img src="{{ _logo_global }}" alt="Logo" style="height:28px; width:auto; object-fit:contain;" />
                 {% else %}
-                    <i class="bi bi-gear-fill"></i>
+                    <i class="bi bi-puzzle-fill" style="color: #14b8a6;"></i>
                 {% endif %}
-                <span>{{ global_settings.name or 'GEEK TECHNOLOGIE' }}</span>
+                <span>{{ global_settings.name or 'TechPlus' }}</span>
             </a>
             
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">

@@ -62,7 +62,7 @@ function printGuide() {
         <html lang="fr">
         <head>
             <meta charset="UTF-8">
-            <title>Guide Utilisateur - GEEK TECHNOLOGIE</title>
+            <title>Guide Utilisateur - TechPlus</title>
             <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
             <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
             <style>
@@ -89,7 +89,7 @@ function printGuide() {
             <div class="container-fluid">
                 <div class="text-center mb-4">
                     <h1>Guide Utilisateur</h1>
-                    <h2>GEEK TECHNOLOGIE</h2>
+                    <h2>TechPlus</h2>
                     <p class="text-muted">Documentation complète de l'application</p>
                     <hr>
                 </div>

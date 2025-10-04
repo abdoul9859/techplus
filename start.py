@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Script de démarrage pour l'application GEEK TECHNOLOGIE
+Script de démarrage pour l'application TechPlus
 """
 
 import uvicorn
@@ -8,6 +8,8 @@ import os
 import sys
 import time
 from pathlib import Path
+from sqlalchemy import create_engine, text
+from sqlalchemy.engine import make_url
 
 # Ajouter le répertoire racine au PYTHONPATH
 root_dir = Path(__file__).parent
@@ -40,6 +42,53 @@ def wait_for_database():
         
     except Exception as e:
         print(f"❌ Erreur lors de la vérification de la base de données: {e}")
+        return False
+
+def ensure_database_exists():
+    """Créer la base PostgreSQL cible si elle n'existe pas.
+
+    Se connecte à la base 'postgres' avec les mêmes identifiants puis exécute
+    CREATE DATABASE si nécessaire.
+    """
+    try:
+        db_url = os.getenv("DATABASE_URL")
+        if not db_url:
+            # Pas de configuration DB: rien à faire ici
+            return True
+
+        url = make_url(db_url)
+        # Ne traiter que PostgreSQL
+        if not str(url.drivername).startswith("postgresql"):
+            return True
+
+        target_db = url.database
+        if not target_db:
+            return True
+
+        admin_url = url.set(database="postgres")
+        engine_admin = create_engine(str(admin_url))
+        try:
+            with engine_admin.connect() as conn:
+                exists = conn.execute(
+                    text("SELECT 1 FROM pg_database WHERE datname = :dbname"),
+                    {"dbname": target_db},
+                ).scalar() is not None
+                if not exists:
+                    # Quoter le nom pour gérer d'éventuels caractères spéciaux
+                    conn.execution_options(isolation_level="AUTOCOMMIT").execute(
+                        text(f'CREATE DATABASE "{target_db}"')
+                    )
+                    print(f"✅ Base de données créée: {target_db}")
+                else:
+                    print(f"ℹ️ Base de données déjà présente: {target_db}")
+        finally:
+            try:
+                engine_admin.dispose()
+            except Exception:
+                pass
+        return True
+    except Exception as e:
+        print(f"⚠️ Impossible de vérifier/créer la base: {e}")
         return False
 
 def create_tables():
@@ -75,9 +124,12 @@ def run_migrations():
 
 def main():
     """Démarrer l'application FastAPI"""
-    print("🚀 Démarrage de GEEK TECHNOLOGIE - Gestion de Stock")
+    print("🚀 Démarrage de TechPlus - Gestion de Stock")
     print("=" * 50)
     
+    # Créer la base de données si elle n'existe pas (ex: volume Postgres déjà initialisé)
+    ensure_database_exists()
+
     # Attendre la base de données
     if not wait_for_database():
         print("❌ Impossible de démarrer sans base de données")

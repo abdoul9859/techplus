@@ -38,8 +38,8 @@ from app.services.migration_processor import migration_processor
 
 # Créer l'application FastAPI
 app = FastAPI(
-    title="GEEK TECHNOLOGIE - Gestion de Stock",
-    description="Application de gestion de stock et facturation avec FastAPI et Bootstrap",
+    title="TechPlus - Gestion de Stock",
+    description="Solution simple pour connexions complexes - Application de gestion de stock et facturation avec FastAPI et Bootstrap",
     version="1.0.0"
 )
 
@@ -138,6 +138,57 @@ def _format_date_no_time(value) -> str:
 
 templates.env.filters["format_date"] = _format_date_no_time
 
+def _format_imei(value) -> str:
+    """Formate un IMEI en groupes de 4 chiffres séparés par des espaces"""
+    try:
+        if not value:
+            return ""
+        # Nettoyer la valeur : supprimer tous les caractères non numériques
+        clean_imei = ''.join(filter(str.isdigit, str(value)))
+        if len(clean_imei) == 15:  # IMEI standard de 15 chiffres
+            # Formater en groupes : XXX XXX XX XXXXXX
+            return f"{clean_imei[:3]} {clean_imei[3:6]} {clean_imei[6:8]} {clean_imei[8:14]} {clean_imei[14:]}"
+        elif len(clean_imei) >= 10:  # Pour les IMEIs plus courts, grouper par 4
+            # Diviser en groupes de 4 chiffres
+            groups = []
+            for i in range(0, len(clean_imei), 4):
+                groups.append(clean_imei[i:i+4])
+            return ' '.join(groups)
+        else:
+            return str(value)  # Retourner tel quel si trop court
+    except Exception:
+        return str(value or "")
+
+templates.env.filters["format_imei"] = _format_imei
+
+def _format_phone_number(value) -> str:
+    """Formate un numéro de téléphone sénégalais"""
+    try:
+        if not value:
+            return ""
+        # Nettoyer le numéro : supprimer tous les caractères non numériques
+        clean_phone = ''.join(filter(str.isdigit, str(value)))
+        
+        # Gérer les formats sénégalais courants
+        if len(clean_phone) == 9 and clean_phone.startswith(('7', '3')):  # 77 XXX XXXX ou 33 XXX XXXX
+            return f"{clean_phone[:2]} {clean_phone[2:5]} {clean_phone[5:]}"
+        elif len(clean_phone) == 12 and clean_phone.startswith('221'):  # +221 77 XXX XXXX
+            return f"+221 {clean_phone[3:5]} {clean_phone[5:8]} {clean_phone[8:]}"
+        elif len(clean_phone) == 11 and clean_phone.startswith('221'):  # 221 7X XXX XXXX
+            return f"+221 {clean_phone[3:5]} {clean_phone[5:8]} {clean_phone[8:]}"
+        elif len(clean_phone) == 8:  # Format court 7X XXX XXX
+            return f"{clean_phone[:2]} {clean_phone[2:5]} {clean_phone[5:]}"
+        else:
+            # Pour les autres formats, essayer de grouper intelligemment
+            if len(clean_phone) >= 9:
+                return f"{clean_phone[:2]} {clean_phone[2:5]} {clean_phone[5:]}"
+            else:
+                return str(value)  # Retourner tel quel si format non reconnu
+    except Exception:
+        return str(value or "")
+
+templates.env.filters["formatPhoneNumber"] = _format_phone_number
+
 def _normalize_logo(logo_value: str | None) -> str | None:
     try:
         if not logo_value:
@@ -185,7 +236,7 @@ async def favicon():
 @app.get("/api")
 async def api_status():
     return {
-        "message": "API GEEK TECHNOLOGIE",
+        "message": "API TechPlus",
         "status": "running",
         "version": "1.0.0",
         "framework": "FastAPI"
@@ -308,7 +359,20 @@ def _load_company_settings(db: Session) -> dict:
     try:
         s = db.query(UserSettings).filter(UserSettings.setting_key == "INVOICE_COMPANY").order_by(UserSettings.updated_at.desc()).first()
         if s and s.setting_value:
-            return json.loads(s.setting_value)
+            data = json.loads(s.setting_value)
+            # Ensure all legal fields are included
+            if not data.get("rc_number") or not data.get("ninea_number") or not data.get("rib_number"):
+                # Try to get legal info from separate settings if not in INVOICE_COMPANY
+                try:
+                    legal_info = db.query(UserSettings).filter(UserSettings.setting_key == "LEGAL_INFO").order_by(UserSettings.updated_at.desc()).first()
+                    if legal_info and legal_info.setting_value:
+                        legal_data = json.loads(legal_info.setting_value)
+                        data.setdefault("rc_number", legal_data.get("rc_number"))
+                        data.setdefault("ninea_number", legal_data.get("ninea_number"))
+                        data.setdefault("rib_number", legal_data.get("rib_number"))
+                except Exception:
+                    pass
+            return data
     except Exception:
         pass
     # Fallback 2: read from consolidated appSettings.company if present
@@ -323,14 +387,18 @@ def _load_company_settings(db: Session) -> dict:
             data = json.loads(legacy_us.setting_value)
             comp = (data or {}).get("company") or {}
             if comp:
-                return {
+                result = {
                     "name": comp.get("companyName") or comp.get("name"),
                     "address": comp.get("companyAddress") or comp.get("address"),
                     "email": comp.get("companyEmail") or comp.get("email"),
                     "phone": comp.get("companyPhone") or comp.get("phone"),
                     "website": comp.get("companyWebsite") or comp.get("website"),
                     "logo": comp.get("logo"),  # DataURL support
+                    "rc_number": comp.get("rc_number"),
+                    "ninea_number": comp.get("ninea_number"),
+                    "rib_number": comp.get("rib_number"),
                 }
+                return result
     except Exception:
         pass
     # Fallback: pull from legacy Settings table if available
@@ -352,6 +420,9 @@ def _load_company_settings(db: Session) -> dict:
                     "logo": getattr(legacy, "logo_path", None),
                     "logo_path": getattr(legacy, "logo_path", None),
                     "footer_text": getattr(legacy, "footer_text", None),
+                    "rc_number": getattr(legacy, "rc_number", None),
+                    "ninea_number": getattr(legacy, "ninea_number", None),
+                    "rib_number": getattr(legacy, "rib_number", None),
                 }
     except Exception:
         pass
@@ -542,14 +613,12 @@ async def print_invoice_page(request: Request, invoice_id: int, db: Session = De
             # Optional legal fields
             "rc_number": company_settings.get("rc_number"),
             "ninea_number": company_settings.get("ninea_number"),
+            "rib_number": company_settings.get("rib_number"),
         },
     }
     
-    # Si la facture a une garantie, utiliser le template combiné
-    if warranty_certificate:
-        return templates.TemplateResponse("print_invoice_with_warranty.html", context)
-    else:
-        return templates.TemplateResponse("print_invoice.html", context)
+    # Utiliser le nouveau template TechPlus moderne
+    return templates.TemplateResponse("print_invoice_techplus.html", context)
 
 
 @app.get("/quotations/print/{quotation_id}", response_class=HTMLResponse)

@@ -145,7 +145,7 @@ def seed_default_data():
         if not admin_user:
             admin_user = User(
                 username="admin",
-                email="admin@geek-technologie.com",
+                email="admin@techplus.com",
                 password_hash=get_password_hash("admin"),
                 full_name="Administrateur",
                 role="admin",
@@ -159,7 +159,7 @@ def seed_default_data():
         if not user:
             user = User(
                 username="user",
-                email="user@geek-technologie.com",
+                email="user@techplus.com",
                 password_hash=get_password_hash("user"),
                 full_name="Utilisateur",
                 role="user",
