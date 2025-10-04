@@ -5,7 +5,8 @@ from typing import Dict, Any, Optional, List
 import json
 from datetime import datetime
 
-from ..database import get_db, UserSettings, ScanHistory, AppCache
+from ..database import get_db, UserSettings, ScanHistory, AppCache, User
+from sqlalchemy.exc import IntegrityError
 from ..auth import get_current_user
 from ..schemas import UserResponse
 
@@ -47,7 +48,15 @@ async def get_user_setting(
     ).first()
     
     if not setting:
-        return {"data": None}
+        # Fallback global (user_id NULL)
+        setting = db.query(UserSettings).filter(
+            and_(
+                UserSettings.user_id.is_(None),
+                UserSettings.setting_key == setting_key
+            )
+        ).first()
+        if not setting:
+            return {"data": None}
     
     try:
         value = json.loads(setting.setting_value)
@@ -88,13 +97,37 @@ async def save_user_setting(
         else:
             setting_value = str(value)
 
-        # Vérifier si le paramètre existe déjà
-        existing_setting = db.query(UserSettings).filter(
-            and_(
-                UserSettings.user_id == current_user.user_id,
-                UserSettings.setting_key == setting_key
-            )
-        ).first()
+        # Déterminer l'utilisateur DB (fallback global si inconnu)
+        claimed_user_id = getattr(current_user, 'user_id', None)
+        db_user = None
+        if claimed_user_id is not None:
+            db_user = db.query(User).filter(User.user_id == claimed_user_id).first()
+        if db_user is None:
+            # Fallback: tenter via username
+            claimed_username = getattr(current_user, 'username', None)
+            if claimed_username:
+                db_user = db.query(User).filter(User.username == claimed_username).first()
+        target_user_id = db_user.user_id if db_user is not None else None
+
+        # Forcer certains paramètres au niveau global
+        if setting_key in ("appSettings", "INVOICE_COMPANY"):
+            target_user_id = None
+
+        # Vérifier si le paramètre existe déjà (user-scoped ou global)
+        if target_user_id is None:
+            existing_setting = db.query(UserSettings).filter(
+                and_(
+                    UserSettings.user_id.is_(None),
+                    UserSettings.setting_key == setting_key
+                )
+            ).first()
+        else:
+            existing_setting = db.query(UserSettings).filter(
+                and_(
+                    UserSettings.user_id == target_user_id,
+                    UserSettings.setting_key == setting_key
+                )
+            ).first()
 
         if existing_setting:
             # Mettre à jour
@@ -103,18 +136,65 @@ async def save_user_setting(
         else:
             # Créer nouveau
             new_setting = UserSettings(
-                user_id=current_user.user_id,
+                user_id=target_user_id,  # None si utilisateur inconnu (global)
                 setting_key=setting_key,
                 setting_value=setting_value
             )
             db.add(new_setting)
 
-        db.commit()
-        return {"message": "Paramètre sauvegardé avec succès"}
+        try:
+            db.commit()
+            return {"message": "Paramètre sauvegardé avec succès"}
+        except IntegrityError as ie:
+            # Fallback automatique en global en cas de FK user manquant
+            try:
+                db.rollback()
+            except Exception:
+                pass
+            try:
+                # Rechercher/mettre à jour global
+                existing_global = db.query(UserSettings).filter(
+                    and_(
+                        UserSettings.user_id.is_(None),
+                        UserSettings.setting_key == setting_key
+                    )
+                ).first()
+                if existing_global:
+                    existing_global.setting_value = setting_value
+                    existing_global.updated_at = datetime.now()
+                else:
+                    db.add(UserSettings(user_id=None, setting_key=setting_key, setting_value=setting_value))
+                db.commit()
+                print(f"[user-settings] FK fallback → sauvegarde globale pour '{setting_key}'")
+                return {"message": "Paramètre sauvegardé (global)"}
+            except Exception as e2:
+                try:
+                    db.rollback()
+                except Exception:
+                    pass
+                raise HTTPException(status_code=400, detail=str(e2))
     except Exception as e:
         # En cas d'erreur inattendue, rollback et retourner 400 plutôt que 422
         try:
             db.rollback()
+        except Exception:
+            pass
+        # Journaliser des informations utiles sans divulguer le contenu
+        try:
+            import traceback
+            safe_len = None
+            try:
+                # Tenter d'estimer la taille du contenu sérialisé
+                _val = locals().get('value', None)
+                if _val is not None:
+                    if isinstance(_val, (dict, list)):
+                        safe_len = len(json.dumps(_val))
+                    elif isinstance(_val, (str, bytes)):
+                        safe_len = len(_val)
+            except Exception:
+                safe_len = None
+            print(f"[user-settings] Erreur save '{setting_key}' pour user_id={getattr(current_user, 'user_id', None)} | type={type(e).__name__} | size={safe_len}")
+            traceback.print_exc()
         except Exception:
             pass
         raise HTTPException(status_code=400, detail=str(e))
