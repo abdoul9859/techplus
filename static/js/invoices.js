@@ -1865,7 +1865,7 @@ async function printInvoice(invoiceId) {
         'scrollbars=1',
         'resizable=1'
     ].join(',');
-    const popup = window.open(`/invoices/print/${invoiceId}`, 'invoice_print_popup', features);
+    const popup = window.open(`/invoices/print/${invoiceId}?v=${Date.now()}`, 'invoice_print_popup', features);
     if (!popup) {
         showWarning('La fenêtre pop-up a été bloquée par le navigateur');
     }
@@ -1882,7 +1882,7 @@ async function generateDeliveryNote(invoiceId) {
         try {
             const dnId = data?.delivery_note_id;
             if (dnId) {
-                const popup = window.open(`/delivery-notes/print/${dnId}`, 'delivery_note_print', 'width=980,height=800,scrollbars=1,resizable=1');
+            const popup = window.open(`/delivery-notes/print/${dnId}?v=${Date.now()}`, 'delivery_note_print', 'width=980,height=800,scrollbars=1,resizable=1');
                 if (!popup) showWarning('La fenêtre pop-up a été bloquée par le navigateur');
             }
         } catch (e) {}

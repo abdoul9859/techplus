@@ -110,6 +110,21 @@ async function loadSettings() {
                     element.value = settings.company[key];
                 }
             });
+            
+            // Charger aussi depuis INVOICE_COMPANY pour compatibilité
+            try {
+                const invoiceCompany = await apiStorage.getItem('INVOICE_COMPANY');
+                if (invoiceCompany) {
+                    if (invoiceCompany.rc_number && document.getElementById('companyTaxNumber')) {
+                        document.getElementById('companyTaxNumber').value = invoiceCompany.rc_number;
+                    }
+                    if (invoiceCompany.ninea_number && document.getElementById('companyRegistration')) {
+                        document.getElementById('companyRegistration').value = invoiceCompany.ninea_number;
+                    }
+                }
+            } catch (e) {
+                // silencieux
+            }
         }
         
         if (settings.invoice) {
@@ -271,6 +286,10 @@ async function saveCompanySettings() {
             companyWebsite: document.getElementById('companyWebsite').value,
             companyTaxNumber: document.getElementById('companyTaxNumber').value,
             companyRegistration: document.getElementById('companyRegistration').value,
+            companyPhone2: document.getElementById('companyPhone2')?.value || '',
+            companyWhatsapp: document.getElementById('companyWhatsapp')?.value || '',
+            companyInstagram: document.getElementById('companyInstagram')?.value || '',
+            companyCity: document.getElementById('companyCity')?.value || '',
         };
 
         if (!settings.companyName.trim()) {
@@ -303,8 +322,14 @@ async function saveCompanySettings() {
             address: settings.companyAddress,
             email: settings.companyEmail,
             phone: settings.companyPhone,
+            phone2: settings.companyPhone2 || null,
+            whatsapp: settings.companyWhatsapp || null,
+            instagram: settings.companyInstagram || null,
+            city: settings.companyCity || null,
             website: settings.companyWebsite,
             logo: logoDataUrl || null,
+            rc_number: settings.companyTaxNumber || null,
+            ninea_number: settings.companyRegistration || null,
         };
         await apiStorage.setItem('INVOICE_COMPANY', printable);
 
@@ -618,7 +643,7 @@ async function createBackup() {
         setTimeout(() => {
             // Créer un lien de téléchargement fictif
             const date = new Date().toISOString().split('T')[0];
-            const filename = `geek-technologie-backup-${date}.db`;
+            const filename = `techplus-backup-${date}.db`;
             
             showSuccess(`Sauvegarde créée: ${filename}`);
         }, 2000);

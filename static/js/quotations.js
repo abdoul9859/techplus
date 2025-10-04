@@ -1151,7 +1151,7 @@ function printQuotation(quotationId) {
     w.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>Impression devis</title></head><body>Chargement...</body></html>');
     w.document.close();
     // Charger le HTML d'impression via fetch pour l'injecter
-    fetch(`/quotations/print/${quotationId}`, { credentials: 'include' })
+    fetch(`/quotations/print/${quotationId}?v=${Date.now()}` , { credentials: 'include' })
         .then(res => res.text())
         .then(html => { w.document.open(); w.document.write(html); w.document.close(); })
         .catch(() => { try { w.close(); } catch(e) {} showError('Impossible de charger la page d\'impression'); });

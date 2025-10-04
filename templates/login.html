@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion - {{ global_settings.name or 'GEEK TECHNOLOGIE' }}</title>
+    <title>Connexion - {{ global_settings.name or 'TechPlus' }}</title>
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -12,7 +12,7 @@
     
     <style>
         body {
-            background: #111827;
+            background: linear-gradient(135deg, #0d9488, #14b8a6);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -26,18 +26,19 @@
             max-width: 400px;
             width: 100%;
         }
-        .login-header { background: #1f2937; color: white; padding: 2rem; text-align: center; }
+        /* UPDATED: make header a fixed-height flex box so logo can fill it */
+        .login-header { background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); color: white; height: 160px; padding: 0 24px; display: flex; align-items: center; justify-content: center; text-align: center; }
         .login-body {
-            padding: 2rem;
+            padding: 1.5rem 2rem 2rem 2rem;
         }
-        .btn-login { background:#1f2937; border:none; border-radius:25px; padding:12px 30px; font-weight:600; text-transform:uppercase; letter-spacing:1px; }
+        .btn-login { background:#0d9488; border:none; border-radius:25px; padding:12px 30px; font-weight:600; text-transform:uppercase; letter-spacing:1px; }
         .form-control {
             border-radius: 25px;
             padding: 12px 20px;
             border: 2px solid #e9ecef;
             transition: all 0.3s ease;
         }
-        .form-control:focus { border-color:#1f2937; box-shadow: 0 0 0 0.2rem rgba(31,41,55,0.25); }
+        .form-control:focus { border-color:#045651; box-shadow: 0 0 0 0.2rem rgba(4,86,81,0.25); }
     </style>
 </head>
 <body>
@@ -45,12 +46,10 @@
         <div class="login-header">
             {% set _logo = (global_settings.logo or global_settings.logo_path) if global_settings is defined else None %}
             {% if _logo %}
-                <img src="{{ _logo }}" alt="Logo" style="height:56px; width:auto; object-fit:contain;" class="mb-2"/>
+                <img src="{{ _logo }}" alt="Logo" style="height:100%; width:auto; object-fit:contain; display:block;"/>
             {% else %}
-                <i class="bi bi-gear-fill fs-1 mb-2"></i>
+                <i class="bi bi-puzzle-fill" style="font-size: 4rem; color: #f0fdfa;"></i>
             {% endif %}
-            <h2 class="mb-0">{{ global_settings.name or 'GEEK TECHNOLOGIE' }}</h2>
-            <p class="mb-0 opacity-75">Gestion de Stock</p>
         </div>
         
         <div class="login-body">

@@ -3,11 +3,11 @@ version: "3.9"
 services:
   db:
     image: postgres:15-alpine
-    container_name: geek_db
+    container_name: techplus_db
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 123
-      POSTGRES_DB: geektechnologie_db
+      POSTGRES_DB: techplus_db
     ports:
       - "5433:5432"
     volumes:
@@ -22,7 +22,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: geek_app
+    container_name: techplus_app
     depends_on:
       db:
         condition: service_healthy
@@ -30,7 +30,7 @@ services:
       - .env
     environment:
       # Override specific variables for Docker
-      DATABASE_URL: postgresql://postgres:123@db:5432/geektechnologie_db
+      DATABASE_URL: postgresql://postgres:123@db:5432/techplus_db
       HOST: 0.0.0.0
       PORT: "8000"
       RELOAD: "false"
